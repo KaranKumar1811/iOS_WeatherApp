@@ -58,7 +58,7 @@ class CityTableViewCell: UITableViewCell {
        if let iconUrl = WeatherURLManager.getWeatherIconUrl(iconCode: iconCode)
        {
         let session = URLSession.shared
-        print(iconUrl)
+     //   print(iconUrl)
         let task=session.dataTask(with: iconUrl) { (data, response, error) in
             if let iconData = data
             {
