@@ -1,5 +1,5 @@
 //
-//  CityTableViewController.swift
+//  ForecastTableViewController.swift
 //  iOS_WeatherApp
 //
 //  Created by MacStudent on 2020-01-17.
@@ -8,14 +8,52 @@
 
 import UIKit
 
-class CityTableViewController: UITableViewController {
-    
-    var cities : [String]?
-    
+class ForecastTableViewController: UITableViewController {
 
+    
+    
+    
+    
+    var cityName : String = ""
+    var forecasts : [ForecastData]!
+    
+    func setCity(city : String)
+    {
+        cityName = city
+        self.title = city
+    
+        if let forecastURL = WeatherURLManager.getForecastWeatherURL(city: city){
+           
+               let session = URLSession.shared
+            //   print(iconUrl)
+               let task=session.dataTask(with: forecastURL) { (data, response, error) in
+                   if data != nil
+                   {
+                    if let forecastData = try? JSON(data: data!){
+                        self.loadForecast(data: forecastData)
+                    }
+                       }
+                   }
+            task.resume()
+               }
+
+    }
+    
+    
+    func loadForecast(data: JSON){
+        forecasts=[ForecastData]()
+        let forecastList = data["list"].arrayValue
+        for json in forecastList{
+            forecasts.append(ForecastData(city: cityName, data: json))
+        }
+        DispatchQueue.main.async {
+            self.tableView.reloadData()
+        }
+    }
+    
     override func viewDidLoad() {
         super.viewDidLoad()
-        cities = ["Toronto","Vancouver","Hawaii","Sydney"]
+
         // Uncomment the following line to preserve selection between presentations
         // self.clearsSelectionOnViewWillAppear = false
 
@@ -32,23 +70,19 @@ class CityTableViewController: UITableViewController {
 
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         // #warning Incomplete implementation, return the number of rows
-        return cities?.count ?? 0
+        return forecasts?.count ?? 0
+       
     }
 
-  
+   
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-       
-        
-        
-        let cell = tableView.dequeueReusableCell(withIdentifier: "cityCell") as! CityTableViewCell
-        cell.setCity(city: cities?[indexPath.row] ?? "")
+        let cell = tableView.dequeueReusableCell(withIdentifier: "ForecastCell") as! ForecastTableViewCell
 
-        // Configure the cell...
+        cell.setForecast(forecast: forecasts[indexPath.row])
 
         return cell
     }
-   
-    
+ 
 
     /*
     // Override to support conditional editing of the table view.
@@ -88,13 +122,8 @@ class CityTableViewController: UITableViewController {
     
     // MARK: - Navigation
 
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-           // Get the new view controller using segue.destination.
-           // Pass the selected object to the new view controller.
-           if let forecastTableVC = segue.description as? ForecastTableViewController{
-               let cityIndex = tableView.indexPath(for: sender as! UITableViewCell)
-            forecastTableVC.setCity(city: cities![cityIndex!.row])
-           }
-       }
+    // In a storyboard-based application, you will often want to do a little preparation before navigation
+   
+    
 
 }
